@@ -78,6 +78,47 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/go-delve/delve/cmd/dlv@latest
 
 #################################
+# INSTALL HomeBrew
+#################################
+
+#!/bin/bash
+
+# 1. Set up the directory structure
+echo "--- Creating Homebrew directory in ~/.linuxbrew ---"
+mkdir -p ~/.linuxbrew/Homebrew
+mkdir -p ~/.linuxbrew/bin
+
+# 2. Apply Network Stability Fixes (HTTP/1.1 for slow/unstable connections)
+echo "--- Applying network stability fixes ---"
+echo "--http1.1" > ~/.curlrc
+export HOMEBREW_CURL_RETRIES=10
+
+# 3. Clone Homebrew (Shallow clone to save bandwidth)
+echo "--- Cloning Homebrew (this may take a moment) ---"
+if [ ! -d "$HOME/.linuxbrew/Homebrew/.git" ]; then
+    git clone --depth=1 https://github.com/Homebrew/brew ~/.linuxbrew/Homebrew
+else
+    echo "Homebrew already cloned. Skipping..."
+fi
+
+# 4. Create the symlink for the executable
+echo "--- Linking brew executable ---"
+ln -sf ../Homebrew/bin/brew ~/.linuxbrew/bin/brew
+
+# 5. Permanent Shell Configuration (Add to .bashrc)
+echo "--- Configuring your shell environment ---"
+if ! grep -q "linuxbrew/bin/brew shellenv" ~/.bashrc; then
+    echo 'eval "$($HOME/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+    echo "Added to ~/.bashrc"
+fi
+
+# 6. Activate for current session and verify
+eval "$($HOME/.linuxbrew/bin/brew shellenv)"
+
+echo "--- Setup Complete! ---"
+brew --version
+
+#################################
 # INSTALL PYTHON TOOLS
 #################################
 clear
