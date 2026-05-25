@@ -77,6 +77,46 @@ eval "$($HOME/.linuxbrew/bin/brew shellenv)"
 #################################
 # INSTALL TOOLS VIA BREW
 #################################
+echo "Installing Brave-Browser"
+# 1. Back to applications folder and clean up any broken error pages
+mkdir -p ~/Applications
+cd ~/Applications
+rm -rf opt/ debian-binary control.tar.xz data.tar.xz brave-browser*
+
+# 2. Extract the actual download URL for the absolute latest stable release package dynamically
+LATEST_URL=$(curl -s https://brave-browser-apt-release.s3.brave.com/dists/stable/main/binary-amd64/Packages | grep -E '^Filename: pool/' | head -n 1 | awk '{print $2}')
+
+# 3. Pull down the clean package file directly
+curl -L -o brave-latest.deb "https://brave-browser-apt-release.s3.brave.com/$LATEST_URL"
+
+# 4. Unpack the production archive binaries safely
+ar x brave-latest.deb
+tar -xf data.tar.xz
+
+# 5. Drop the temporary archive payloads to keep your user directory clean
+rm -f control.tar.xz data.tar.xz debian-binary brave-latest.deb
+echo "alias brave='~/Applications/opt/brave.com/brave/brave-browser --no-sandbox &'" >> ~/.bashrc && source ~/.bashrc
+mkdir -p ~/.local/share/applications
+
+cat << 'EOF' > ~/.local/share/applications/brave-local.desktop
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Brave Browser (Local)
+Comment=Web Browser
+Exec=/home/riotieno/Applications/opt/brave.com/brave/brave-browser --no-sandbox %U
+Icon=/home/riotieno/Applications/opt/brave.com/brave/product_logo_128.png
+Terminal=false
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;
+EOF
+
+# Make the desktop entry executable
+chmod +x ~/.local/share/applications/brave-local.desktop
+
+#################################
+# INSTALL TOOLS VIA BREW
+#################################
 echo "Installing Neovim, Ripgrep, fd, and fzf..."
 brew install neovim ripgrep fd fzf
 
